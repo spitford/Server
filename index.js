@@ -29,6 +29,13 @@ io.on('connection', function(socket) {
         }
     }
 
+    socket.on('updatePosition', function(data) {
+        player.position.x = data.position.x;
+        player.position.y = data.position.y;
+
+        socket.broadcast.emit('updatePosition', player);
+    });
+
     socket.on('disconnect', function() {
         console.log('Player Disconnected');
         delete players[thisPlayerID];
