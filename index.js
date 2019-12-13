@@ -81,6 +81,7 @@ io.on('connection', function(socket) {
     socket.on('fireBullet', function(data) {
         var bullet = new Bullet();
         bullet.name = 'Bullet';
+        bullet.activator = data.activator;
         bullet.position.x = data.position.x;
         bullet.position.y = data.position.y;
         bullet.direction.x = data.direction.x;
@@ -91,6 +92,7 @@ io.on('connection', function(socket) {
         var returnData = {
             name: bullet.name,
             id: bullet.id,
+            activator: bullet.activator,
             position: {
                 x: bullet.position.x,
                 y: bullet.position.y
@@ -103,6 +105,17 @@ io.on('connection', function(socket) {
 
         socket.emit('serverSpawn', returnData);
         socket.broadcast.emit('serverSpawn', returnData);
+    });
+
+    socket.on('collisionDestroy', function(data) {
+        console.log('Collision with bullet id: ' + data.id);
+        let returnBullets = bullets.filter(bullet => {
+            return bullet.id == data.id
+        });
+
+        returnBullets.forEach(bullet => {
+            bullet.isDestroyed = true;
+        });
     });
 
     socket.on('disconnect', function() {
