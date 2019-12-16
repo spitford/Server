@@ -56,7 +56,7 @@ module.exports = class GameLobby extends LobbyBase {
             if (isDestroyed) {
                 lobby.despawnBullet(bullet);
             } else {
-                var returnData = {
+                /* var returnData = {
                     id: bullet.id,
                     position: {
                         x: bullet.position.x,
@@ -66,7 +66,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                 connections.forEach(connection => {
                     connection.socket.emit('updatePosition', returnData);
-                });
+                }); */
             }
         });
     }
@@ -121,7 +121,8 @@ module.exports = class GameLobby extends LobbyBase {
             direction: {
                 x: bullet.direction.x,
                 y: bullet.direction.y
-            }
+            },
+            speed: bullet.speed
         }
 
         connection.socket.emit('serverSpawn', returnData);
@@ -144,7 +145,8 @@ module.exports = class GameLobby extends LobbyBase {
                 if(bullet.activator != player.id) {
                     let distance = bullet.position.Distance(player.position);
 
-                    if(distance < 0.65) {
+                    if(distance < 0.8) {
+                        console.log('Got Here');
                         let isDead = player.dealDamage(50);
                         if (isDead) {
                             console.log('Player with id: ' + player.id + ' has died');
