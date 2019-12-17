@@ -31,10 +31,13 @@ module.exports = class GameLobby extends LobbyBase {
 
     onEnterLobby(connection = Connection) {
         let lobby = this;
+        let socket = connection.socket;
 
         super.onEnterLobby(connection);
 
         lobby.addPlayer(connection);
+
+        socket.emit('loadGame');
     }
 
     onLeaveLobby(connection = Connection) {
