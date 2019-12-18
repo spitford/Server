@@ -2,11 +2,13 @@ let LobbyBase = require('./LobbyBase')
 let GameLobbySettings = require('./GameLobbySettings')
 let Connection = require('../Connection')
 let Bullet = require('../Bullet')
+let LobbyState = require('../Utility/LobbyState')
 
 module.exports = class GameLobby extends LobbyBase {
     constructor(id, settings = GameLobbySettings) {
         super(id);
         this.settings = settings;
+        this.lobbyState = new LobbyState();
         this.bullets = [];
     }
 
@@ -35,9 +37,21 @@ module.exports = class GameLobby extends LobbyBase {
 
         super.onEnterLobby(connection);
 
-        lobby.addPlayer(connection);
+        //lobby.addPlayer(connection);
+
+        if (lobby.connections.length == lobby.settings.maxPlayers) {
+            console.log('We have enough players and can start the game');
+            lobby.lobbyState.currentState = lobby.lobbyState.GAME;
+            lobby.onSpawnAllPlayersIntoGame();
+        }
+
+        let returnData = {
+            state: lobby.lobbyState.currentState
+        };
 
         socket.emit('loadGame');
+        socket.emit('lobbyUpdate', returnData);
+        socket.broadcast.to(lobby.id).emit('lobbyUpdate', returnData);
     }
 
     onLeaveLobby(connection = Connection) {
@@ -46,6 +60,15 @@ module.exports = class GameLobby extends LobbyBase {
         super.onLeaveLobby(connection);
 
         lobby.removePlayer(connection);
+    }
+
+    onSpawnAllPlayersIntoGame() {
+        let lobby = this;
+        let connections = lobby.connections;
+
+        connections.forEach(connection => {
+            lobby.addPlayer(connection);
+        });
     }
 
     updateBullets() {
@@ -149,7 +172,6 @@ module.exports = class GameLobby extends LobbyBase {
                     let distance = bullet.position.Distance(player.position);
 
                     if(distance < 0.8) {
-                        console.log('Got Here');
                         let isDead = player.dealDamage(50);
                         if (isDead) {
                             console.log('Player with id: ' + player.id + ' has died');
@@ -202,7 +224,7 @@ module.exports = class GameLobby extends LobbyBase {
         }
 
         socket.emit('spawn', returnData);
-        socket.broadcast.to(lobby.id).emit('spawn', returnData);
+        // socket.broadcast.to(lobby.id).emit('spawn', returnData);
 
         connections.forEach(c => {
             if(c.player.id != connection.player.id) {

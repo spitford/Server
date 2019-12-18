@@ -52,7 +52,13 @@ module.exports = class Server {
             id: id
         });
 
-        server.lobbies[connection.player.lobby].onLeaveLobby(connection);
+        let currentLobbyIndex = connection.player.lobby;
+        server.lobbies[currentLobbyIndex].onLeaveLobby(connection);
+
+        if (server.lobbies[currentLobbyIndex] != 0 && server.lobbies[currentLobbyIndex].connections.length == 0) {
+            console.log('Closing down lobby (' + currentLobbyIndex + ')');
+            server.lobbies.splice(currentLobbyIndex, 1);
+        }
     }
 
     onAttemptToJoinGame(connection = Connection) {
