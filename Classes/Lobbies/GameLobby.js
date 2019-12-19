@@ -3,6 +3,9 @@ let GameLobbySettings = require('./GameLobbySettings')
 let Connection = require('../Connection')
 let Bullet = require('../Bullet')
 let LobbyState = require('../Utility/LobbyState')
+let Vector2 = require('../Vector2')
+let ServerItem = require('../Utility/ServerItem')
+let AIBase = require('../AI/AIBase')
 
 module.exports = class GameLobby extends LobbyBase {
     constructor(id, settings = GameLobbySettings) {
@@ -14,6 +17,8 @@ module.exports = class GameLobby extends LobbyBase {
 
     onUpdate() {
         let lobby = this;
+
+        super.onUpdate();
 
         lobby.updateBullets();
         lobby.updateDeadPlayers();
@@ -43,6 +48,7 @@ module.exports = class GameLobby extends LobbyBase {
             console.log('We have enough players and can start the game');
             lobby.lobbyState.currentState = lobby.lobbyState.GAME;
             lobby.onSpawnAllPlayersIntoGame();
+            lobby.onSpawnAIIntoGame();
         }
 
         let returnData = {
@@ -60,6 +66,7 @@ module.exports = class GameLobby extends LobbyBase {
         super.onLeaveLobby(connection);
 
         lobby.removePlayer(connection);
+        lobby.onDespawnAllAIInGame(connection);
     }
 
     onSpawnAllPlayersIntoGame() {
@@ -68,6 +75,22 @@ module.exports = class GameLobby extends LobbyBase {
 
         connections.forEach(connection => {
             lobby.addPlayer(connection);
+        });
+    }
+
+    onSpawnAIIntoGame() {
+        let lobby = this;
+        lobby.onServerSpawn(new AIBase, new Vector2());
+    }
+
+    onDespawnAllAIInGame(connection = Connection) {
+        let lobby = this;
+        let ServerItem = lobby.serverItems;
+
+        this.serverItems.forEach(serverItem => {
+            connection.socket.emit('serverDespawn', {
+                id: serverItem.id
+            });
         });
     }
 

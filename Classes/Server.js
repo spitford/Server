@@ -55,7 +55,7 @@ module.exports = class Server {
         let currentLobbyIndex = connection.player.lobby;
         server.lobbies[currentLobbyIndex].onLeaveLobby(connection);
 
-        if (server.lobbies[currentLobbyIndex] != 0 && server.lobbies[currentLobbyIndex].connections.length == 0) {
+        if (currentLobbyIndex != 0 && server.lobbies[currentLobbyIndex].connections.length == 0) {
             console.log('Closing down lobby (' + currentLobbyIndex + ')');
             server.lobbies.splice(currentLobbyIndex, 1);
         }
@@ -83,7 +83,7 @@ module.exports = class Server {
 
         if(!lobbyFound) {
             console.log('Making a new Game Lobby');
-            let gamelobby = new GameLobby(gameLobbies.length + 1, new GameLobbySettings('FFA', 2));
+            let gamelobby = new GameLobby(gameLobbies.length + 1, new GameLobbySettings('FFA', 1));
             server.lobbies.push(gamelobby);
             server.onSwitchLobby(connection, gamelobby.id);
         }
